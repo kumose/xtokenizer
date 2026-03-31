@@ -19,6 +19,8 @@
 
 cmake_minimum_required(VERSION 3.24)
 
+cmake_policy(SET CMP0175 NEW)
+
 project(xtokenizer CXX)
 
 option(${PROJECT_NAME}_IS_TOP_PROJECT "xtokenizer project is the top level project or not" ON)
@@ -28,9 +30,9 @@ if (not_top)
     set(${PROJECT_NAME}_IS_TOP_PROJECT OFF)
 endif ()
 
-set(PROJECT_DESCRIPTION "Hercules is an ahead of time compiler for a subset of the Python language framework.")
+set(PROJECT_DESCRIPTION "Universal tokenizers binding to HF and sentencepiece.")
 set(PROJECT_VERSION_MAJOR 0)
-set(PROJECT_VERSION_MINOR 0)
+set(PROJECT_VERSION_MINOR 3)
 set(PROJECT_VERSION_PATCH 5)
 set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
 
@@ -61,7 +63,7 @@ include(kmcmake_module)
 # your cmake directory ${PROJECT_SOURCE_DIR}/cmake, do things here
 #################################################################
 
-
+include(cargo)
 include(xtokenizer_deps)
 include(xtokenizer_cxx_config)
 include(xtokenizer_test)
@@ -94,6 +96,7 @@ if(NOT PYTHON_EXTENSION)
             PATTERN "*.inc"
             PATTERN "*.h"
             PATTERN "*.hpp"
+            PATTERN "rust" EXCLUDE
             )
 
     # Layout. This works for all platforms:

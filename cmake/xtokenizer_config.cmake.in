@@ -23,8 +23,28 @@ set(@PROJECT_NAME@_VERSION @PROJECT_VERSION@)
 set(@PROJECT_NAME@_INCLUDE_DIR ${PACKAGE_PREFIX_DIR}/include)
 
 
-#include_directories(${PACKAGE_PREFIX_DIR}/include)
+include_directories(${PACKAGE_PREFIX_DIR}/include)
+
+find_package(turbo REQUIRED)
+find_library(SC_LIB NAMES sentencepiece)
+if (NOT SC_LIB)
+    message(FATAL_ERROR "not found ")
+endif ()
+
+find_package(Protobuf REQUIRED)
 
 set(@PROJECT_NAME@_ARCH_FLAGS @KMCMAKE_ARCH_OPTION@)
 
+set(HAVE_RUST_HG @RUST_SUPPORT@)
+
+if(HAVE_RUST_HG)
+    if(NOT TARGET @PROJECT_NAME@::token_hg)
+        add_library(@PROJECT_NAME@::token_hg STATIC IMPORTED)
+        set_target_properties(@PROJECT_NAME@::token_hg PROPERTIES
+            IMPORTED_LOCATION "${PACKAGE_PREFIX_DIR}/lib/libtoken_hg.a"
+            INTERFACE_LINK_LIBRARIES "${SC_LIB}"
+            INTERFACE_INCLUDE_DIRECTORIES "${PACKAGE_PREFIX_DIR}/include"
+        )
+    endif()
+endif()
 check_required_components("@PROJECT_NAME@")
