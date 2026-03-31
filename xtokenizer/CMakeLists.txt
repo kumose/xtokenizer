@@ -26,7 +26,6 @@ if (RUST_SUPPORT)
             ${CMAKE_COMMAND} -E env
             CARGO_TARGET_DIR=${XTOKENIZERS_CARGO_TARGET_DIR}
             ${CARGO_EXTRA_ENVS}
-            RUSTFLAGS="${XTOKENIZERS_RUST_FLAGS}"
             ${CARGO_EXECUTABLE} build ${XTOKENIZERS_CARGO_FLAGS}
             WORKING_DIRECTORY ${XTOKENIZERS_CARGO_SOURCE_PATH}
             COMMENT "Building Rust tokenizer ..."
