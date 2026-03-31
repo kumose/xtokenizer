@@ -13,8 +13,147 @@ xtokenizer
 
 [中文版](./README_CN.md)
 
+This project provides a cross-platform C++ tokenizer binding library that can be universally deployed.
+It wraps and binds the [HuggingFace tokenizers library](https://github.com/huggingface/tokenizers)
+and [sentencepiece](https://github.com/google/sentencepiece) and provides a minimum common interface in C++.
 
-xtokenizer Project Description
+The main goal of the project is to enable tokenizer deployment for language model applications
+to native platforms with minimum dependencies and remove some of the barriers of
+cross-language bindings. This project is developed in part with and
+used in [Kumo search](https://pub.kumose.cc). We have tested the following platforms:
+
+- iOS
+- Android
+- Windows
+- Linux
+- Web browser
+
+## Getting Started
+
+The easiest way is to add this project as a submodule and then
+include it via `add_sub_directory` in your CMake project.
+You also need to turn on `c++17` support.
+
+- First, you need to make sure you have rust installed.
+- If you are cross-compiling make sure you install the necessary target in rust.
+  For example, run `rustup target add aarch64-apple-ios` to install iOS target.
+- You can then link the library
+
+See [example](examples) folder for an example CMake project.
+
+### Example Code
+
+```c++
+// - dist/tokenizer.json
+void HuggingFaceTokenizerExample() {
+    std::cout << "Tokenizer: Huggingface" << std::endl;
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    // Read blob from file.
+    auto blob = LoadBytesFromFile("dist/tokenizer.json");
+    // Note: all the current factory APIs takes in-memory blob as input.
+    // This gives some flexibility on how these blobs can be read.
+    auto tok = xtokenizer::Tokenizer::hugging_from_blob_json(blob);
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
+    std::cout << "Load time: " << duration << " ms" << std::endl;
+
+    TestTokenizer(std::move(tok), false, true);
+}
+
+void SentencePieceTokenizerExample() {
+    std::cout << "Tokenizer: SentencePiece" << std::endl;
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    // Read blob from file.
+    auto blob = LoadBytesFromFile("dist/tokenizer.model");
+    // Note: all the current factory APIs takes in-memory blob as input.
+    // This gives some flexibility on how these blobs can be read.
+    auto tok = xtokenizer::Tokenizer::sentence_piece_from_blob(blob);
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
+    std::cout << "Load time: " << duration << " ms" << std::endl;
+
+    TestTokenizer(std::move(tok), false, true);
+}
+```
+
+### Extra Details
+
+Currently, the project generates three static libraries
+- `libtoken_hg.a`: the c binding to tokenizers rust library
+- `libxtokenizer.a`: the cpp binding implementation
+
+
+the `libtoken_hg.a` need rust cargo installed, if do not install
+`cargo`, this will not generate build.
+
+## try 
+
+run the example:
+```shell
+./build_and_run.sh
+```
+
+result:
+
+```
+---Running example----
+Tokenizer: SentencePiece
+Load time: 4 ms
+tokens=[1724, 338, 278, 29871, 7483, 310, 7400, 29973]
+decode="What is the  capital of Canada?"
+id=0, token="<unk>", id_new=0
+id=1, token="<s>", id_new=1
+id=2, token="</s>", id_new=2
+id=3, token="<0x00>", id_new=3
+id=32, token="<0x1D>", id_new=32
+id=33, token="<0x1E>", id_new=33
+id=34, token="<0x1F>", id_new=34
+id=130, token="<0x7F>", id_new=130
+id=131, token="<0x80>", id_new=131
+id=1000, token="ied", id_new=1000
+vocab_size=32000
+
+Tokenizer: Huggingface
+Load time: 46 ms
+tokens=[1276, 310, 253, 50276, 38479, 273, 6144, 32]
+decode="What is the  capital of Canada?"
+id=0, token="<|endoftext|>", id_new=0
+id=1, token="<|padding|>", id_new=1
+id=2, token="!", id_new=2
+id=3, token=""", id_new=3
+id=32, token="?", id_new=32
+id=33, token="@", id_new=33
+id=34, token="A", id_new=34
+id=130, token="Æ", id_new=130
+id=131, token="Ç", id_new=131
+id=1000, token="err", id_new=1000
+vocab_size=50277
+
+Tokenizer: Huggingface BPE
+Load time: 135 ms
+tokens=[3838, 374, 279, 256, 65063, 315, 6864, 30]
+decode="What is the  capital of Canada?"
+id=0, token="!", id_new=0
+id=1, token=""", id_new=1
+id=2, token="#", id_new=2
+id=3, token="$", id_new=3
+id=32, token="A", id_new=32
+id=33, token="B", id_new=33
+id=34, token="C", id_new=34
+id=130, token="Æ", id_new=130
+id=131, token="Ç", id_new=131
+id=1000, token="atus", id_new=1000
+vocab_size=151643
+
+```
 
 ## 🛠️ Build
 

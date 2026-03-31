@@ -19,6 +19,8 @@
 
 cmake_minimum_required(VERSION 3.24)
 
+cmake_policy(SET CMP0175 NEW)
+
 project(xtokenizer CXX)
 
 option(${PROJECT_NAME}_IS_TOP_PROJECT "xtokenizer project is the top level project or not" ON)
@@ -61,7 +63,7 @@ include(kmcmake_module)
 # your cmake directory ${PROJECT_SOURCE_DIR}/cmake, do things here
 #################################################################
 
-
+include(cargo)
 include(xtokenizer_deps)
 include(xtokenizer_cxx_config)
 include(xtokenizer_test)
@@ -94,6 +96,7 @@ if(NOT PYTHON_EXTENSION)
             PATTERN "*.inc"
             PATTERN "*.h"
             PATTERN "*.hpp"
+            PATTERN "rust" EXCLUDE
             )
 
     # Layout. This works for all platforms:

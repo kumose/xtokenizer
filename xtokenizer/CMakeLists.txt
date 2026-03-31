@@ -16,42 +16,68 @@
 # below are examples, after initialization, modify it to your own.
 ###########################################################################
 ###kmcmake_example
+
+if (RUST_SUPPORT)
+
+
+    add_custom_command(
+            OUTPUT ${TOKENIZERS_RUST_LIB}
+            COMMAND
+            ${CMAKE_COMMAND} -E env
+            CARGO_TARGET_DIR=${XTOKENIZERS_CARGO_TARGET_DIR}
+            ${CARGO_EXTRA_ENVS}
+            RUSTFLAGS="${XTOKENIZERS_RUST_FLAGS}"
+            ${CARGO_EXECUTABLE} build ${XTOKENIZERS_CARGO_FLAGS}
+            WORKING_DIRECTORY ${XTOKENIZERS_CARGO_SOURCE_PATH}
+            COMMENT "Building Rust tokenizer ..."
+            VERBATIM
+    )
+
+    add_custom_command(
+            OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/libtoken_hg.a
+            COMMAND
+            ${CMAKE_COMMAND} -E copy
+            ${TOKENIZERS_RUST_LIB}
+            ${CMAKE_CURRENT_BINARY_DIR}
+            DEPENDS ${TOKENIZERS_RUST_LIB}
+            COMMENT "Copying Rust library to build dir..."
+            VERBATIM
+    )
+
+    add_custom_target(token_hg_copy ALL
+            DEPENDS
+            ${TOKENIZERS_RUST_LIB}
+            ${CMAKE_CURRENT_BINARY_DIR}/libtoken_hg.a
+    )
+
+    add_library(token_hg STATIC IMPORTED GLOBAL)
+    set_target_properties(token_hg PROPERTIES
+            IMPORTED_LOCATION ${TOKENIZERS_RUST_LIB}
+    )
+    add_dependencies(token_hg token_hg_copy)
+
+    add_custom_target(token_hg_build
+            DEPENDS ${TOKENIZERS_RUST_LIB}
+    )
+    install(FILES ${TOKENIZERS_RUST_LIB}
+            DESTINATION lib
+            RENAME libtoken_hg.a
+    )
+endif ()
+
 kmcmake_cc_library(
         NAMESPACE ${PROJECT_NAME}
-        NAME foo
+        NAME xtokenizer
         SOURCES
-        foo.cc
+        sentencepiece.cc
+        huggingface.cc
+        tokenizer.cc
         CXXOPTS
         ${KMCMAKE_CXX_OPTIONS}
         PLINKS
+        ${TOKENIZERS_RUST_LIB}
         ${KMCMAKE_DEPS_LINK}
         PUBLIC
 )
-
-kmcmake_cc_interface(
-        NAMESPACE ${PROJECT_NAME}
-        NAME api
-        HEADERS
-        api.h
-        CXXOPTS
-        ${KMCMAKE_CXX_OPTIONS}
-        PUBLIC
-)
-
-kmcmake_cc_binary(
-        NAMESPACE ${PROJECT_NAME}
-        NAME shared_main
-        SOURCES
-        main.cc
-        CXXOPTS
-        ${KMCMAKE_CXX_OPTIONS}
-        DEPS
-        ${PROJECT_NAME}::foo
-        LINKS
-        ${KMCMAKE_DEPS_LINK}
-        ${PROJECT_NAME}::foo
-        PUBLIC
-)
-
 
 ###kmcmake_example

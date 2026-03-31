@@ -35,6 +35,54 @@ if (KMCMAKE_BUILD_BENCHMARK)
 endif ()
 
 find_package(Threads REQUIRED)
+find_package(turbo REQUIRED)
+find_library(SC_LIB NAMES sentencepiece)
+if (NOT SC_LIB)
+    message(FATAL_ERROR "not found ")
+endif ()
+
+find_package(Protobuf REQUIRED)
+
+if (Protobuf_VERSION GREATER 4.21)
+    # required by absl
+    find_package(absl REQUIRED CONFIG)
+    set(protobuf_ABSL_USED_TARGETS
+            absl::absl_check
+            absl::absl_log
+            absl::algorithm
+            absl::base
+            absl::bind_front
+            absl::bits
+            absl::btree
+            absl::cleanup
+            absl::cord
+            absl::core_headers
+            absl::debugging
+            absl::die_if_null
+            absl::dynamic_annotations
+            absl::flags
+            absl::flat_hash_map
+            absl::flat_hash_set
+            absl::function_ref
+            absl::hash
+            absl::layout
+            absl::log_initialize
+            absl::log_severity
+            absl::memory
+            absl::node_hash_map
+            absl::node_hash_set
+            absl::optional
+            absl::span
+            absl::status
+            absl::statusor
+            absl::strings
+            absl::synchronization
+            absl::time
+            absl::type_traits
+            absl::utility
+            absl::variant
+    )
+endif ()
 
 ############################################################
 #
@@ -44,6 +92,11 @@ find_package(Threads REQUIRED)
 ##########################################################
 set(KMCMAKE_DEPS_LINK
         #${TURBO_LIB}
+        ${SC_LIB}
+        protobuf::libprotobuf
+        ${protobuf_ABSL_USED_TARGETS}
+        protobuf::libprotoc
+        turbo::turbo_static
         ${KMCMAKE_SYSTEM_DYLINK}
         )
 list(REMOVE_DUPLICATES KMCMAKE_DEPS_LINK)
